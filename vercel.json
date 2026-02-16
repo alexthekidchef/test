@@ -12,14 +12,18 @@
   ],
   "routes": [
     {
+      "src": "^/api/(.*)$",
+      "dest": "/api/$1"
+    },
+    {
       "handle": "filesystem"
     },
     {
-      "src": "/",
+      "src": "^/$",
       "dest": "/public/index.html"
     },
     {
-      "src": "/(?!api/)(.*)",
+      "src": "^/(.*)$",
       "dest": "/public/$1"
     }
   ]
