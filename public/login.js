@@ -36,7 +36,7 @@ async function doLogin(username, password){
   const errEl = document.getElementById("err");
   if(errEl) errEl.textContent = "";
   try{
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch("/api/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -75,3 +75,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
   startBgCycle();
   wireLogin();
 });
+// Extra diagnostics (safe to keep)
+window.debugLogin = async function(){
+  const u = document.getElementById("username")?.value || "";
+  const p = document.getElementById("password")?.value || "";
+  try{
+    const r = await fetch("/api/auth/login", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({username:u, password:p})});
+    const t = await r.text();
+    console.log("LOGIN RESP", r.status, t);
+    return {status:r.status, body:t};
+  }catch(e){
+    console.log("LOGIN ERR", e);
+    return {error:String(e)};
+  }
+};
