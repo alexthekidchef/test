@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Train Information</title>
+  <style>
+    :root{
+      /* Official palette from your swatches */
+      --amtrak-blue: #00537e;      /* AMTRAK BLUE 302 */
+      --carbody-white: #f5f4f0;    /* CARBODY WHITE */
+      --safety-yellow: #ffdd00;    /* SAFETY YELLOW 109 */
+
+      --ink: #0b1b2b;
+      --line-white: rgba(245,244,240,.92);
+      --line-blue: rgba(0,83,126,.28);
+
+      --font: Frutiger, "Frutiger LT Std", "Segoe UI", Tahoma, Arial, sans-serif;
+
+      /* sizing tuned to match the workstation photo */
+      --info-row-h: 22px;
+      --info-font: 12px;
+
+      /* display mode (public board) */
+      --disp-w: 1920px;
+      --disp-h: 1080px;
+    }
+
+    html,body{height:100%; margin:0; font-family:var(--font); background:var(--carbody-white); color:var(--ink);}
+    *{font-weight:400;} /* no bold anywhere */
+
+    /* -----------------------------
+       Simple menu (no cards)
+    ------------------------------*/
+    #menu{
+      max-width: 720px;
+      margin: 28px auto;
+      padding: 18px;
+      border: 2px solid var(--amtrak-blue);
+      background: var(--carbody-white);
+    }
+    #menu h1{
+      margin: 0 0 10px;
+      font-size: 34px;
+      letter-spacing: .3px;
+    }
+    #menu .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin: 10px 0;}
+    label{font-size:12px; opacity:.85;}
+    select,input{
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--amtrak-blue);
+      background: var(--carbody-white);
+      color: var(--ink);
+      outline: none;
+    }
+    button{
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 8px 12px;
+      border: 1px solid var(--amtrak-blue);
+      background: var(--carbody-white);
+      color: var(--amtrak-blue);
+      cursor: pointer;
+    }
+    button.primary{
+      background: var(--amtrak-blue);
+      color: var(--carbody-white);
+    }
+
+    /* -----------------------------
+       INFO MODE (workstation)
+    ------------------------------*/
+    #infoShell{
+      display:none;
+      padding: 10px 12px;
+      background: var(--carbody-white);
+    }
+
+    .infoTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      margin-bottom: 6px;
+    }
+    .infoTitle{
+      font-size: 22px;
+      color: var(--amtrak-blue);
+      letter-spacing: 1px;
+      text-transform: lowercase;
+    }
+    .infoClock{
+      font-size: 14px;
+      color: var(--amtrak-blue);
+    }
+
+    .infoControls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin: 6px 0 8px;
+    }
+    .infoControls label{font-size:12px;}
+    .infoControls select,.infoControls input{font-size:12px; padding:6px 8px;}
+    .infoControls button{font-size:12px; padding:6px 10px;}
+
+    /* Departures vs Arrivals rule:
+       - Departures: white header, blue rows
+       - Arrivals:   blue header, white rows
+    */
+    table{width:100%; border-collapse:collapse; table-layout:fixed;}
+    thead th{
+      font-size: 12px;
+      text-align:left;
+      padding: 5px 6px;
+      border-bottom: 1px solid var(--line-blue);
+      background: var(--carbody-white);
+      color: var(--amtrak-blue);
+    }
+    tbody td{
+      font-size: var(--info-font);
+      height: var(--info-row-h);
+      padding: 0 6px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      border-top: 1px solid rgba(245,244,240,.65);
+      color: var(--carbody-white);
+    }
+    tbody tr{ background: var(--amtrak-blue); }
+    tbody tr:nth-child(even){ filter: brightness(.96); }
+
+    /* Arrivals variant */
+    #infoTable.arrivals thead th{
+      background: var(--amtrak-blue);
+      color: var(--carbody-white);
+      border-bottom: 1px solid rgba(245,244,240,.55);
+    }
+    #infoTable.arrivals tbody tr{ background: var(--carbody-white); }
+    #infoTable.arrivals tbody td{
+      color: var(--amtrak-blue);
+      border-top: 1px solid var(--line-blue);
+    }
+
+    .col-time{width:78px}
+    .col-no{width:70px}
+    .col-train{width:140px}
+    .col-to{width:170px}
+    .col-status{width:110px}
+    .col-gate{width:70px; text-align:center;}
+    .col-track{width:70px; text-align:center;}
+
+    .statusTag{
+      display:inline-block;
+      padding: 2px 6px;
+      background: transparent;
+      color: inherit;
+    }
+    .boarding{
+      background: var(--safety-yellow);
+      color: #000;
+      animation: flash 1s steps(2,end) infinite;
+    }
+    @keyframes flash{ 50%{opacity:.35;} }
+
+    /* -----------------------------
+       DISPLAY MODE (1920x1080 signage)
+    ------------------------------*/
+    #displayRoot{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:#000;
+      align-items:center;
+      justify-content:center;
+    }
+    #displayCanvas{
+      width: var(--disp-w);
+      height: var(--disp-h);
+      background: var(--carbody-white);
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* header: old photo departures uses white header area, blue text */
+    .dispTitle{
+      position:absolute;
+      left: 70px;
+      top: 44px;
+      font-size: 70px;
+      color: var(--amtrak-blue);
+      letter-spacing: 2px;
+      text-transform: lowercase;
+    }
+    .dispClock{
+      position:absolute;
+      right: 70px;
+      top: 54px;
+      font-size: 42px;
+      color: var(--amtrak-blue);
+    }
+
+    .dispColumns{
+      position:absolute;
+      left: 70px;
+      top: 140px;
+      right: 70px;
+      height: 32px;
+      display:flex;
+      align-items:flex-end;
+      gap:0;
+      font-size: 18px;
+      color: var(--amtrak-blue);
+    }
+    .dispColumns > div{ padding: 0 10px; }
+    .dispBody{
+      position:absolute;
+      left: 70px;
+      top: 180px;
+      right: 70px;
+      bottom: 120px;
+    }
+
+    .dispRow{
+      height: 44px;
+      display:flex;
+      align-items:center;
+      background: var(--amtrak-blue);
+      color: var(--carbody-white);
+      border-top: 2px solid rgba(245,244,240,.9);
+      font-size: 26px;
+    }
+    .dispRow:nth-child(even){ filter: brightness(.96); }
+    .dispCell{ padding: 0 10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+
+    /* arrivals variant for display: blue header bar behind column headings, white rows */
+    #displayCanvas.arrivals .dispColumns{
+      background: var(--amtrak-blue);
+      color: var(--carbody-white);
+      height: 44px;
+      top: 132px;
+      align-items:center;
+    }
+    #displayCanvas.arrivals .dispBody{ top: 188px; }
+    #displayCanvas.arrivals .dispRow{
+      background: var(--carbody-white);
+      color: var(--amtrak-blue);
+      border-top: 2px solid rgba(0,83,126,.25);
+    }
+
+    /* Column widths (close to photo) */
+    .w-time{width: 150px;}
+    .w-no{width: 150px;}
+    .w-train{width: 420px;}
+    .w-to{width: 520px;}
+    .w-status{width: 300px;}
+    .w-gate{width: 180px; text-align:center;}
+    .w-track{width: 180px; text-align:center;}
+
+    /* Ticker */
+    .ticker{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: 90px;
+      background: var(--amtrak-blue);
+      color: var(--carbody-white);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      font-size: 34px;
+    }
+    #tickerText{
+      position:absolute;
+      white-space:nowrap;
+      left: 100%;
+      padding-left: 40px;
+      padding-right: 40px;
+    }
+
+    /* Scale canvas to viewport */
+    #displayRoot.scaled #displayCanvas{
+      transform-origin:center center;
+    }
+  
+.btn{padding:8px 12px;border:1px solid #888;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+.btn:hover{opacity:.85}
+</style>
+<script>
+(async ()=>{
+  try{
+    const r = await fetch("/api/auth/me",{cache:"no-store"});
+    if(!r.ok) location.href="/login.html";
+  }catch(e){
+    location.href="/login.html";
+  }
+})();
+</script>
+</head>
+<body>
+<button id="logoutBtn" class="btn" type="button" style="position:fixed;top:16px;right:16px;z-index:9999">Log out</button>
+
+
+  <div id="menu">
+    <h1>Train Information</h1>
+    <div class="row">
+      <label>Search</label><input id="stationFilter" placeholder="WAS or Washington"/>
+      <label>Station</label>
+      <select id="stationSelect"></select>
+
+      <label>Board</label>
+      <select id="boardType">
+        <option value="departures" selected>Departures</option>
+        <option value="arrivals">Arrivals</option>
+      </select>
+
+      <label>Date</label>
+      <input id="dateInput" type="date"/>
+    </div>
+
+    <div class="row">
+      <label>Scrolling message</label>
+      <input id="tickerInput" type="text" style="min-width:360px" placeholder="Type message…"/>
+    </div>
+
+    <div class="row">
+      <button class="primary" id="openInfo">Info Mode</button>
+      <button class="primary" id="openDisplay">Display Mode (1080p)</button>
+      <button class="primary" id="openTrainDetails">Train Details</button>
+      <button class="primary" id="openStationStatus">Station Status</button>
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <span style="font-size:12px;opacity:.8;">Tip: Display Mode is designed for 1920×1080 signage. Use F11 for fullscreen.</span>
+    </div>
+  </div>
+
+  <!-- Info Mode -->
+  <div id="infoShell">
+    <div class="infoTop">
+      <div class="infoTitle" id="infoTitle">departures</div>
+      <div class="infoClock" id="infoClock">--:--</div>
+    </div>
+
+    <div class="infoControls">
+      <label>Search</label><input id="infoStationFilter" placeholder="WAS or Washington"/><label>Station</label><select id="infoStation"></select>
+      <label>Board</label><select id="infoBoard"><option value="departures">Departures</option><option value="arrivals">Arrivals</option></select>
+      <label>Date</label><input id="infoDate" type="date"/>
+      <label>Ticker</label><input id="infoTicker" type="text" style="min-width:320px"/>
+      <button id="applyInfo">Apply</button>
+      <button id="backMenu">Menu</button>
+    </div>
+
+    <table id="infoTable" class="departures">
+      <thead>
+        <tr>
+          <th class="col-time">Time</th>
+          <th class="col-no">No.</th>
+          <th class="col-train">Train</th>
+          <th class="col-to">To</th>
+          <th class="col-status">Status</th>
+          <th class="col-gate">Gate</th>
+          <th class="col-track">Track</th>
+        </tr>
+      </thead>
+      <tbody id="infoRows"></tbody>
+    </table>
+  </div>
+
+  <!-- Display Mode -->
+  <div id="displayRoot">
+    <div id="displayCanvas" class="departures">
+      <button id="displayBack" style="position:absolute;left:20px;top:20px;padding:6px 10px;border:1px solid #00537e;background:#f5f4f0;color:#00537e;cursor:pointer;">Back</button>
+
+      <div class="dispTitle" id="dispTitle">departures</div>
+      <div class="dispClock" id="dispClock">--:--</div>
+
+      <div class="dispColumns" id="dispCols">
+        <div class="dispCell w-time">Time</div>
+        <div class="dispCell w-no">No. Train</div>
+        <div class="dispCell w-train"></div>
+        <div class="dispCell w-to">To</div>
+        <div class="dispCell w-status">Status</div>
+        <div class="dispCell w-gate">Gate</div>
+        <div class="dispCell w-track">Track</div>
+      </div>
+
+      <div class="dispBody" id="dispBody"></div>
+
+      <div class="ticker">
+        <div id="tickerText"></div>
+      </div>
+    </div>
+  </div>
+
+<script src="./app.js"></script>
+</body>
+</html>

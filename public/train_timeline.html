@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Train Timeline</title>
+<style>
+:root{
+  --amtrak-blue:#00537e;
+  --carbody-white:#f5f4f0;
+  --safety-yellow:#ffdd00;
+  --ink:#0b1b2b;
+  --font: Frutiger, "Frutiger LT Std", "Segoe UI", Tahoma, Arial, sans-serif;
+}
+html,body{height:100%;margin:0;font-family:var(--font);background:var(--carbody-white);color:var(--ink);}
+*{font-weight:400;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:2px solid var(--amtrak-blue);}
+.header h1{margin:0;font-size:20px;color:var(--amtrak-blue);letter-spacing:.3px;}
+button{font-family:var(--font);font-size:14px;padding:8px 12px;border:1px solid var(--amtrak-blue);background:var(--carbody-white);color:var(--amtrak-blue);cursor:pointer;}
+.main{max-width:1100px;margin:16px auto;padding:0 16px;}
+.meta{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:8px 0 14px;}
+.pill{display:inline-block;padding:3px 8px;border:1px solid rgba(0,83,126,.35);border-radius:999px;font-size:12px;color:var(--amtrak-blue);background:rgba(0,83,126,.05);}
+.grid{display:grid;grid-template-columns: 1fr 1fr;gap:18px;}
+.card{border:1px solid rgba(0,83,126,.28);background:var(--carbody-white);padding:12px;}
+.card h2{margin:0 0 10px;font-size:14px;color:var(--amtrak-blue);letter-spacing:.2px;}
+/* Line map */
+.lineWrap{position:relative;padding-left:28px;}
+.line{position:absolute;left:12px;top:0;bottom:0;width:2px;background:rgba(0,83,126,.35);}
+.item{display:grid;grid-template-columns: 240px 120px 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,83,126,.14);}
+.dot{position:absolute;left:7px;width:12px;height:12px;border-radius:999px;background:var(--carbody-white);border:2px solid rgba(0,83,126,.5);}
+.dot.past{background:var(--amtrak-blue);border-color:var(--amtrak-blue);}
+.dot.now{background:var(--safety-yellow);border-color:var(--safety-yellow);}
+.station{font-size:14px;}
+.event{font-size:13px;opacity:.9;}
+.time{font-size:13px;color:var(--amtrak-blue);}
+.small{font-size:12px;opacity:.75;}
+.error{padding:10px 12px;border:1px solid rgba(180,0,0,.3);background:rgba(255,0,0,.05);color:#700;}
+@media (max-width: 900px){
+  .grid{grid-template-columns:1fr;}
+  .item{grid-template-columns: 1fr; gap:4px;}
+}
+
+.btn{padding:8px 12px;border:1px solid #888;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+.btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="title">Train</h1>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="small" id="lastUpdate">—</span>
+      <button id="back">Back</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="meta" id="meta"></div>
+    <div id="err" class="error" style="display:none"></div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Past Events</h2>
+        <div class="lineWrap" id="pastWrap">
+          <div class="line"></div>
+          <div id="past"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Planned Events</h2>
+        <div class="lineWrap" id="planWrap">
+          <div class="line"></div>
+          <div id="planned"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="./train_timeline.js"></script>
+</body>
+</html>

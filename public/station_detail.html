@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Station Detail</title>
+<style>
+:root{
+  --amtrak-blue:#00537e;
+  --bg:#f5f4f0;
+  --ink:#0b1b2b;
+  --font: Frutiger, "Frutiger LT Std", "Segoe UI", Tahoma, Arial, sans-serif;
+}
+html,body{height:100%;margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);}
+*{font-weight:400;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:2px solid var(--amtrak-blue);}
+.header h1{margin:0;font-size:20px;color:var(--amtrak-blue);letter-spacing:.3px;}
+button{font-family:var(--font);font-size:14px;padding:8px 12px;border:1px solid var(--amtrak-blue);background:var(--bg);color:var(--amtrak-blue);cursor:pointer;}
+.main{max-width:1200px;margin:16px auto;padding:0 16px;}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 12px;}
+label{font-size:12px;opacity:.85}
+input,select{font-family:var(--font);font-size:14px;padding:8px 10px;border:1px solid var(--amtrak-blue);background:var(--bg);color:var(--ink);outline:none;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+thead th{font-size:12px;text-align:left;padding:8px 8px;background:var(--bg);color:var(--amtrak-blue);border-bottom:1px solid rgba(0,83,126,.28);}
+tbody tr{cursor:pointer;}
+tbody tr:hover{background:rgba(0,83,126,.08);}
+tbody td{font-size:14px;padding:10px 8px;border-bottom:1px solid rgba(0,83,126,.18);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.small{font-size:12px;opacity:.75;}
+.pill{display:inline-block;padding:3px 8px;border:1px solid rgba(0,83,126,.35);border-radius:999px;font-size:12px;color:var(--amtrak-blue);background:rgba(0,83,126,.05);}
+.tabbar{display:flex;gap:8px;margin:8px 0 12px;flex-wrap:wrap;}
+.tab{padding:6px 10px;border:1px solid rgba(0,83,126,.35);border-radius:999px;background:rgba(0,83,126,.05);color:var(--amtrak-blue);cursor:pointer;font-size:13px;}
+.tab.active{background:var(--amtrak-blue);color:var(--bg);border-color:var(--amtrak-blue);}
+
+.btn{padding:8px 12px;border:1px solid #888;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+.btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="title">Station</h1>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="small" id="lastUpdate">—</span>
+      <button id="back">Back</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="controls">
+      <label>Date</label>
+      <input id="date" type="date"/>
+      <label>Search train</label>
+      <input id="q" placeholder="Train #, destination, route"/>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab active" data-tab="departures">Departures</div>
+      <div class="tab" data-tab="arrivals">Arrivals</div>
+      <div class="tab" data-tab="all">All</div>
+    </div>
+
+    <div class="small" id="msg">—</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px;">Time</th>
+          <th style="width:120px;">Train</th>
+          <th style="width:260px;">Route</th>
+          <th style="width:260px;"><span id="toFromHdr">To / From</span></th>
+          <th style="width:200px;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+<script src="./station_detail.js"></script>
+</body>
+</html>

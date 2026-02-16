@@ -1,0 +1,6 @@
+Accounts:
+- alexjs / 12345  (full access)
+- necoperations / change-me-nec  (NEC-only trains/stations; limited pages)
+
+Change passwords:
+  python add_user.py accounts.json <user> <pass> <route1> <route2> ...
